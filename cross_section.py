@@ -143,27 +143,26 @@ class CrossSection:
             height_of_tension = self.concrete.et / self.kappa  # 使用曲率计算的开裂区长度
             max_tension_height = self.shape.h - self.height_in_compression  # 使用曲率最大压应变计算的拉区最大高度
             height_of_tension = height_of_tension if height_of_tension <= max_tension_height else max_tension_height
+            position_of_crack = max_tension_height - height_of_tension
             area_in_tension = \
-                self.shape.get_area_below(max_tension_height) - self.shape.get_area_below(height_of_tension)
+                self.shape.get_area_below(max_tension_height) - self.shape.get_area_below(position_of_crack)
             return area_in_tension * self.concrete.ft, height_of_tension / 2
 
     def get_tension_force_of_steel(self) -> tuple:
         # 钢筋应力及位置，位置到中和轴
         strain_of_steel = self.kappa * (self.height_in_compression - self.steel_distribution.a0)
-        return (self.steel_distribution.get_force(strain_of_steel),
-                self.height_in_compression - self.steel_distribution.a0)
+        height_of_zero_stress = self.shape.h - self.height_in_compression
+        return self.steel_distribution.get_force(strain_of_steel), height_of_zero_stress - self.steel_distribution.a0
 
 
 if __name__ == "__main__":
-    print(1)
     default_shape = Shape(TypeOfShape.Rectangle, [250, 500])  # 宽 250 高 500 的矩形截面
-    print(1)
     sd = SteelDistribution(material.Steel(material.SteelGrade.HPB300), 4, 20, 35)  # 4根 HPB300 钢筋，直径20，距离下边缘35
-    print(1)
     cs_concrete = material.Concrete(material.ConcreteGrade.C30)  # C30混凝土
-    print(1)
     cross_section = CrossSection(default_shape, cs_concrete, sd)  # 生成截面
-    print(1)
 
-    cross_section.set_section_state(0.025, 0.0033)
+    cross_section.set_section_state(2.475*(10**-5), 0.0033)
     print(cross_section.height_in_compression)
+    print(cross_section.get_tension_force_of_steel())
+    print(cross_section.get_tension_force())
+    print(cross_section.get_compression_force())

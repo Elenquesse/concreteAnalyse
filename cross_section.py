@@ -90,8 +90,19 @@ class CrossSection:
         return self.kappa * (h - height_in_compression)
 
     def get_compression_force(self) -> tuple:
-        # 返回当前曲率和最大压应变下压力
-        pass
+        # 返回当前曲率和最大压应变下混凝土压力及作用位置（到中和轴）
+        split_num = 100
+        dx = (self.shape.h - self.height_of_zero_stress) / split_num
+        compression_force = 0
+        compression_moment = 0
+        for i in range(split_num):
+            now_height = self.height_of_zero_stress + i * dx
+            now_strain = i * dx * self.kappa
+            dc = self.shape.get_width_at_height(now_height) * dx * self.concrete.get_stress(now_strain)
+            compression_force += dc
+            compression_moment += dc * i * dx
+        compression_position = compression_moment / compression_force
+        return compression_force, compression_position
 
     def get_tension_force(self) -> tuple:
         # 当前曲率和最大压应变下混凝土截面拉力T及高度（到中和轴）

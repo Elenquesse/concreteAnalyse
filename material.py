@@ -2,7 +2,7 @@ from enum import IntEnum, Enum
 from math import fabs
 
 
-# 钢材弹性模量，都按定值 200GPa 取了
+# 钢材弹性模量，都按定值 200000MPa 取了
 ELASTIC_MODULES_OF_STEEL = 200000
 
 
@@ -37,12 +37,12 @@ class Steel:
 
 class Concrete:
     def __init__(self, grade: ConcreteGrade):
-        self.__fc = grade.value["fc"]  # 轴心抗压强度
+        self.__fc = grade.value["fc"]  # 轴心抗压强度 MPa
         self.__n = grade.value["n"]  # 应力应变关系参数
         self.__e0 = grade.value["e0"]  # 应力应变关系参数
         self.__eu = grade.value["eu"]  # 极限应变
-        self.ec = grade.value["ec"]  # 弹性模量
-        self.ft = grade.value["ft"]  # 抗拉强度
+        self.ec = grade.value["ec"]  # 弹性模量 MPa
+        self.ft = grade.value["ft"]  # 抗拉强度 MPa
         self.et = 2 * grade.value["ft"] / self.ec  # 开裂应变
 
     def get_stress(self, strain: float) -> float:

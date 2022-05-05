@@ -2,7 +2,8 @@ from enum import IntEnum, Enum
 from math import fabs
 
 
-ELASTIC_MODULES_OF_STEEL = 20000
+# 钢材弹性模量，都按定值 200GPa 取了
+ELASTIC_MODULES_OF_STEEL = 200000
 
 
 class SteelGrade(IntEnum):
@@ -16,12 +17,12 @@ class SteelGrade(IntEnum):
 
 
 class ConcreteGrade(Enum):
-    C30 = {"fck": 30, "n": 2, "e0": 0.002, "eu": 0.0033, "ft": 1, "ec": 1}
-    C40 = {"fck": 40, "n": 2, "e0": 0.002, "eu": 0.0033, "ft": 1, "ec": 1}
-    C50 = {"fck": 50, "n": 2, "e0": 0.002, "eu": 0.0033, "ft": 1, "ec": 1}
-    C60 = {"fck": 60, "n": 1.83, "e0": 0.00205, "eu": 0.0032, "ft": 1, "ec": 1}
-    C70 = {"fck": 70, "n": 1.67, "e0": 0.00210, "eu": 0.0031, "ft": 1, "ec": 1}
-    C80 = {"fck": 80, "n": 1.50, "e0": 0.00215, "eu": 0.0030, "ft": 1, "ec": 1}
+    C30 = {"fc": 14.3, "n": 2, "e0": 0.002, "eu": 0.0033, "ft": 1.43, "ec": 30000}
+    C40 = {"fc": 19.1, "n": 2, "e0": 0.002, "eu": 0.0033, "ft": 1.71, "ec": 32500}
+    C50 = {"fc": 23.1, "n": 2, "e0": 0.002, "eu": 0.0033, "ft": 1.89, "ec": 34500}
+    C60 = {"fc": 27.5, "n": 1.83, "e0": 0.00205, "eu": 0.0032, "ft": 2.04, "ec": 36000}
+    C70 = {"fc": 31.8, "n": 1.67, "e0": 0.00210, "eu": 0.0031, "ft": 2.14, "ec": 37000}
+    C80 = {"fc": 35.9, "n": 1.50, "e0": 0.00215, "eu": 0.0030, "ft": 2.22, "ec": 38000}
 
 
 class Steel:
@@ -36,14 +37,13 @@ class Steel:
 
 class Concrete:
     def __init__(self, grade: ConcreteGrade):
-        self.__fck = grade.value["fck"]
-        self.__fc = self.__fck
-        self.__n = grade.value["n"]
-        self.__e0 = grade.value["e0"]
-        self.__eu = grade.value["eu"]
-        self.ec = grade.value["ec"]
-        self.ft = grade.value["ft"]
-        self.et = 2 * grade.value["ft"] / self.ec
+        self.__fc = grade.value["fc"]  # 轴心抗压强度
+        self.__n = grade.value["n"]  # 应力应变关系参数
+        self.__e0 = grade.value["e0"]  # 应力应变关系参数
+        self.__eu = grade.value["eu"]  # 极限应变
+        self.ec = grade.value["ec"]  # 弹性模量
+        self.ft = grade.value["ft"]  # 抗拉强度
+        self.et = 2 * grade.value["ft"] / self.ec  # 开裂应变
 
     def get_stress(self, strain: float) -> float:
         # 压区正应变

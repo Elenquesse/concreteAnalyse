@@ -146,10 +146,10 @@ class CrossSection:
             position_of_crack = max_tension_height - height_of_tension
             area_in_tension = \
                 self.shape.get_area_below(max_tension_height) - self.shape.get_area_below(position_of_crack)
-            return area_in_tension * self.concrete.ft, height_of_tension / 2
+            return area_in_tension * self.concrete.ft/2, 2*height_of_tension / 3
 
     def get_tension_force_of_steel(self) -> tuple:
-        # 钢筋应力及位置，位置到中和轴
+        # 钢筋力及位置，位置到中和轴
         strain_of_steel = self.kappa * (self.height_in_compression - self.steel_distribution.a0)
         height_of_zero_stress = self.shape.h - self.height_in_compression
         return self.steel_distribution.get_force(strain_of_steel), height_of_zero_stress - self.steel_distribution.a0

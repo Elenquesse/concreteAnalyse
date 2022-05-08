@@ -40,7 +40,7 @@ class Concrete:
         self.__fc = grade.value["fc"]  # 轴心抗压强度 MPa
         self.__n = grade.value["n"]  # 应力应变关系参数
         self.__e0 = grade.value["e0"]  # 应力应变关系参数
-        self.__eu = grade.value["eu"]  # 极限应变
+        self.eu = grade.value["eu"]  # 极限应变
         self.ec = grade.value["ec"]  # 弹性模量 MPa
         self.ft = grade.value["ft"]  # 抗拉强度 MPa
         self.et = 2 * grade.value["ft"] / self.ec  # 开裂应变
@@ -51,7 +51,7 @@ class Concrete:
             if strain <= self.__e0:
                 return self.__fc * (1 - (1 - strain / self.__e0) ** self.__n)
             else:
-                if strain <= self.__eu:
+                if strain <= self.eu:
                     return self.__fc
                 else:
                     return 0

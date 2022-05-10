@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+
+  <title>钢筋混凝土弯矩-曲率全曲线分析器</title>
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+    integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+
+  <!-- HTML5 shim 和 Respond.js 是为了让 IE8 支持 HTML5 元素和媒体查询（media queries）功能 -->
+  <!-- 警告：通过 file:// 协议（就是直接将 html 页面拖拽到浏览器中）访问页面时 Respond.js 不起作用 -->
+  <!--[if lt IE 9]>
+      <script src="https://fastly.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+      <script src="https://fastly.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+    <![endif]-->
+
+  <!-- 导入绘制图标用的echarts.js文件 -->
+  <script src="echarts.js"></script>
+
+  <style>
+    .info-box {
+      margin: 10px 10px 0px 10px;
+      padding: 15px;
+      border-radius: 5px;
+      background-color: #eee;
+      height: 98%;
+      width: 100%;
+    }
+
+    .draw-box {
+      margin: 10px;
+      padding: 15px;
+      border-radius: 5px;
+      background-color: #eee;
+      height: 98%;
+      width: 100%;
+    }
+
+    html {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      width: 99%;
+      height: 100%;
+      margin: 0px 0px 0px 0px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="row" style="height: 95%;">
+    <div class="col-md-4" style="background-color: #fff; height: 95%;">
+      <form action="" class="info-box" method="" id="analyseForm">
+
+        <div class="form-group">
+          <label for="sectionShape">截面形状（虽然预留了接口但这里除了矩形截面剩下的还没写完orz）</label>
+          <select style="width: 150px;" class="form-control" id="sectionShape">
+            <option value="rectangle">矩形截面</option>
+            <option value="tshape" disabled="true">T形截面</option>
+            <option value="ishape" disabled="true">工字形截面</option>
+          </select>
+          <label for="sectionHeight">截面高度h/mm</label>
+          <input type="number" min="0" class="form-control" id="sectionHeight" placeholder="截面高度，单位mm">
+          <label for="sectionWidth">截面宽度b/mm</label>
+          <input type="number" min="0" class="form-control" id="sectionWidth" placeholder="截面宽度，单位mm">
+        </div>
+
+        <!-- <div class="form-group">
+                    <label for="sectionHeight">截面高度</label>
+                    <input type="number"  min="0" class="form-control" id="sectionHeight" placeholder="截面高度，单位mm">
+                </div>
+                <div class="form-group">
+                  <label for="sectionWidth">截面高度</label>
+                  <input type="number"  min="0" class="form-control" id="sectionWidth" placeholder="截面宽度，单位mm">
+                </div> -->
+
+        <div class="form-group">
+          <label for="concreteGrade">混凝土强度等级</label>
+          <select class="form-control" id="concreteGrade">
+            <option value="30">C30</option>
+            <option value="40">C40</option>
+            <option value="50">C50</option>
+            <option value="60">C60</option>
+            <option value="70">C70</option>
+            <option value="80">C80</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="steelGrade">钢筋牌号</label>
+          <select class="form-control" id="steelGrade">
+            <option value="HPB300">HPB300</option>
+            <option value="HRB335">HRB335</option>
+            <option value="HRB400">HRB400</option>
+            <option value="HRBF400">HRBF400</option>
+            <option value="RRB400">RRB400</option>
+            <option value="HRB500">HRB500</option>
+            <option value="HRBF500">HRBF500</option>
+          </select>
+          <label for="steelNum">钢筋根数n</label>
+          <input type="number" min="0" class="form-control" id="steelNum" placeholder="钢筋根数">
+          <label for="steelD">钢筋直径d/mm</label>
+          <input type="number" min="0" class="form-control" id="steelD" placeholder="钢筋直径，单位mm">
+          <label for="steelA">钢筋高度a/mm</label>
+          <input type="number" min="0" class="form-control" id="steelA" placeholder="钢筋距离截面底部高度，单位mm">
+        </div>
+
+        <button type="button" class="btn btn-success" style="width: 100%;" onclick="btnSubmit()"
+          id="submitBtn">给我算！</button>
+
+
+      </form>
+    </div>
+
+    <div class="col-md-8" style="background-color: white; height:95%;" id="drawBox">
+    </div>
+  </div>
+
+  <!-- 页脚 -->
+  <div class="row" style="height: 5%; background-color: #eee; vertical-align: middle;">
+    <div class="col-xs-12" style="height: 100%;">
+      <p class="text-right">Source Code <a
+          href="https://github.com/Ecthelion-F/concreteAnalyse">https://github.com/Ecthelion-F/concreteAnalyse</a>;
+        </br>
+        Author <a href="mailto:shihz19@mails.tsinghua.edu.cn">shz</a>.
+      </p>
+    </div>
+  </div>
+
+
+
+
+  <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
+  <script src="https://fastly.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"
+    integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ"
+    crossorigin="anonymous"></script>
+  <!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+    integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd"
+    crossorigin="anonymous"></script>
+
+  <!-- 图表初始化 -->
+  <script>
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('drawBox'));
+
+    // 指定图表的配置项和数据
+    var option = {
+      title: {
+        text: "这是一个初始化图表，请在左边输入参数..."
+      },
+      xAxis: {},
+      yAxis: {},
+      series: [
+        {
+          data: [
+            [20, 120],
+            [50, 200],
+            [40, 50]
+          ],
+          type: 'line'
+        }
+      ]
+    };
+    // 使用刚指定的配置项和数据显示图表。
+    myChart.setOption(option);
+  </script>
+
+  <!-- 逻辑核心 -->
+  <script>
+    function btnSubmit(id) {
+      /* 获取数据 */
+      // 截面
+      var sectionShape = $("#analyseForm [id='sectionShape']").val();
+      var sectionHeight = $("#analyseForm [id='sectionHeight']").val();
+      var sectionWidth = $("#analyseForm [id='sectionWidth']").val();
+      // 混凝土
+      var concreteGrade = $("#analyseForm [id='concreteGrade']").val();
+      // 钢筋
+      var steelGrade = $("#analyseForm [id='steelGrade']").val();
+      var steelNum = $("#analyseForm [id='steelNum']").val();
+      var steelD = $("#analyseForm [id='steelD']").val();
+      var steelA = $("#analyseForm [id='steelA']").val();
+
+      // debug
+      console.log(sectionShape, sectionHeight, sectionWidth, concreteGrade, steelGrade, steelNum, steelD, steelA);
+
+      // 修改按钮到正在计算，发送请求
+      var requestUrl = "http://127.0.0.1:8000/concrete"   // 如果部署，这里需要修改
+      $("#submitBtn").text("正在计算中，请稍等...");
+      $.getJSON(requestUrl,
+        // 数据
+        {
+          section_shape: sectionShape,
+          section_height: sectionHeight,
+          section_width: sectionWidth,
+          concrete_grade: concreteGrade,
+          steel_grade: steelGrade,
+          steel_num: steelNum,
+          steel_d: steelD,
+          steel_a: steelA
+        },
+
+        // 成功回调
+        (data) => {
+          console.log(data.State);
+          var kappa = data.kappa;
+          var moment = data.moment;
+          data_to_draw = [];
+          for (i = 0; i < kappa.length; ++i) {
+            data_to_draw.push([kappa[i] * Math.pow(10, -2), moment[i] * Math.pow(10, -6)]);
+          }
+          console.log(data_to_draw);
+          $("#submitBtn").text("计算完成！点我可以继续算别的~");
+          var option = {
+            title: {
+              text: "计算结果"
+            },
+            xAxis: {
+              name: "曲率(0.001/m)",
+              nameLocation: "middle"
+            },
+            yAxis: {
+              name: "弯矩(kN·m)",
+            },
+            series: [
+              {
+                data: data_to_draw,
+                type: 'line',
+                itemStyle: {
+                  opacity: 0,
+                }
+              }
+            ]
+          };
+          myChart.setOption(option);
+        }
+      ).error(function () { alert("出现错误！请将您的输入数据通知开发者来push他修bug"); location.reload(); })
+    }
+  </script>
+</body>
+
+</html>

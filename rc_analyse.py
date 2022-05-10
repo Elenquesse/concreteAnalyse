@@ -29,13 +29,13 @@ def analyse_strain(cs: cross_section.CrossSection, given_kappa: float) -> tuple:
         steel_force, steel_position = cs.get_tension_force_of_steel()
         tension = concrete_tension + steel_force
         e = tension - compression
-        if 0 <= e <= 1:
+        if 0 <= e <= 10:
             moment = concrete_tension * tension_position + compression * compression_position + \
                      steel_force * steel_position
             # print(cs.get_tension_force_of_steel())
             # print(cs.kappa * (cs.height_in_compression - cs.steel_distribution.a0))
             return mid, moment
-        if e > 1:
+        if e > 10:
             l = mid
         else:
             r = mid

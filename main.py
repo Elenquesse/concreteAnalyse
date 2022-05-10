@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from rc_analyse import analyse_section
+from transform_dict import SHAPE_TRANSFORM_DICT, STEEL_TRANSFORM_DICT
 
 app = FastAPI()
 
@@ -33,7 +34,14 @@ async def say_hello(name: str):
     return {"message": f"Hello {name}"}
 
 
-@app.get("/concrete/{name}")
-async def analyse_cross_section(name: str):
-    ka, mo = analyse_section(0, [250, 500], 0, [4, 20, 35], 30)
+@app.get("/concrete/")
+async def analyse_cross_section(section_shape: str = "rectangle", section_height: int = 500, section_width: int = 250,
+                                concrete_grade: int = 30,
+                                steel_grade: str = "HPB300", steel_num: int = 4, steel_d: int = 20, steel_a: int = 35):
+    # print(section_shape, section_height, section_width, concrete_grade, steel_grade, steel_num, steel_d, steel_a)
+    section_shape = SHAPE_TRANSFORM_DICT[section_shape]
+    steel_grade = STEEL_TRANSFORM_DICT[steel_grade]
+    ka, mo = analyse_section(section_shape, [section_width, section_height],
+                             steel_grade, [steel_num, steel_d, steel_a], concrete_grade)
+    # ka, mo = analyse_section(0, [250, 500], 0, [4, 20, 35], 30)
     return {"kappa": ka, "moment": mo}

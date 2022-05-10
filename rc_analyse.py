@@ -1,6 +1,21 @@
 import cross_section
+from cross_section import TypeOfShape as tos
 import material
+from material import SteelGrade as sd
+from material import  ConcreteGrade as cd
 import pandas as pd
+
+# 截面形状、钢筋牌号、混凝土强度等级由数字向类的映射
+SHAPE_DICT = (tos.Rectangle, tos.T_shape, tos.I_shape)
+STEEL_DICT = (sd.HPB300, sd.HRB335, sd.HRB400, sd.HRBF400, sd.RRB400, sd.HRB500, sd.HRBF500)
+CONCRETE_DICT = {
+    30: cd.C30,
+    40: cd.C40,
+    50: cd.C50,
+    60: cd.C60,
+    70: cd.C70,
+    80: cd.C80
+}
 
 
 def analyse_strain(cs: cross_section.CrossSection, given_kappa: float) -> tuple:
@@ -38,13 +53,12 @@ def analyse_section(shape_type: int, shape_para: list, steel_type: int, steel_pa
     :param concrete_grade: 混凝土强度等级
     :return: tuple，其中为两个list，第一个为曲率（1/mm），第二个为对应弯矩（N·mm）
     """
-    if shape_type == 0:
-        shape = cross_section.Shape(cross_section.TypeOfShape.Rectangle, shape_para)
-    # TODO: 选择合适的钢筋牌号
-    steel_grade = material.Steel(material.SteelGrade.HPB300)
+    shape = cross_section.Shape(SHAPE_DICT[shape_type], shape_para)
+
+    steel_grade = material.Steel(STEEL_DICT[steel_type])
     _sd = cross_section.SteelDistribution(steel_grade, steel_para[0], steel_para[1], steel_para[2])
-    # TODO: 选择合适的混凝土牌号
-    _cs_concrete = material.Concrete(material.ConcreteGrade.C30)
+
+    _cs_concrete = material.Concrete(CONCRETE_DICT[concrete_grade])
     cs = cross_section.CrossSection(shape, _cs_concrete, _sd)
 
     _mo = []
@@ -57,6 +71,9 @@ def analyse_section(shape_type: int, shape_para: list, steel_type: int, steel_pa
             _mo.append(m)
             _ka.append(i)
             i += 1
+            # debug
+            # if i%10==0:
+            #     print(i)
         else:
             break
     return _ka, _mo

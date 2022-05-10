@@ -57,8 +57,6 @@ def analyse_section(shape_type: int, shape_para: list, steel_type: int, steel_pa
             _mo.append(m)
             _ka.append(i)
             i += 1
-            if i % 10 == 0:
-                print(i)
         else:
             break
     return _ka, _mo
